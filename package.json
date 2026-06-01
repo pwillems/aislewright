@@ -1,0 +1,21 @@
+{
+  "name": "aislewright",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Open-source, self-hostable wedding website and RSVP platform.",
+  "license": "MIT",
+  "packageManager": "pnpm@10.12.1",
+  "scripts": {
+    "dev": "corepack pnpm -r --parallel --filter @aislewright/api --filter @aislewright/web dev",
+    "build": "corepack pnpm --filter @aislewright/shared build && corepack pnpm --filter @aislewright/api build && corepack pnpm --filter @aislewright/web build",
+    "typecheck": "corepack pnpm --filter @aislewright/shared typecheck && corepack pnpm --filter @aislewright/shared build && corepack pnpm --filter @aislewright/api typecheck && corepack pnpm --filter @aislewright/web typecheck",
+    "lint": "corepack pnpm --filter @aislewright/shared lint && corepack pnpm --filter @aislewright/api lint && corepack pnpm --filter @aislewright/web lint",
+    "test": "corepack pnpm --filter @aislewright/shared test && corepack pnpm --filter @aislewright/api test && corepack pnpm --filter @aislewright/web test",
+    "db:migrate": "corepack pnpm --filter @aislewright/api db:migrate",
+    "db:seed": "corepack pnpm --filter @aislewright/api db:seed"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  }
+}
