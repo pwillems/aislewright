@@ -1,7 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Car, Download, Heart, Lock, Plus, Save, Users, Wine } from "lucide-react";
+import { CalendarDays, Car, Download, Heart, Info, Lock, MapPin, Plus, Save, Users, Wine } from "lucide-react";
 import type { ActivityResponse, Guest, Household, MenuSelection, RideOffer, WeddingContent } from "@aislewright/shared";
 import { api, exportUrl, type GuestState } from "./api";
 
@@ -24,19 +24,19 @@ function Button({ children, type = "button", variant = "primary", onClick, disab
   disabled?: boolean;
 }) {
   const variants = {
-    primary: "bg-[var(--accent-strong)] text-white hover:opacity-95",
-    secondary: "bg-[var(--accent)] text-white hover:opacity-95",
-    ghost: "bg-transparent text-[var(--ink)] ring-1 ring-black/10 hover:bg-black/5"
+    primary: "bg-[var(--brown)] text-[var(--cream)] hover:bg-[var(--brown-dark)]",
+    secondary: "bg-[var(--sand)] text-[var(--brown)] hover:bg-[var(--cream-dark)]",
+    ghost: "bg-transparent text-[var(--brown)] ring-1 ring-black/10 hover:bg-black/5"
   };
   return (
-    <button type={type} onClick={onClick} disabled={disabled} className={"focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 " + variants[variant]}>
+    <button type={type} onClick={onClick} disabled={disabled} className={"focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 " + variants[variant]}>
       {children}
     </button>
   );
 }
 
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <section className={"rounded-md border border-black/10 bg-[var(--surface)] p-5 shadow-soft " + className}>{children}</section>;
+  return <section className={"rounded-2xl border border-[var(--sand)] bg-[var(--surface)] p-5 shadow-soft " + className}>{children}</section>;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -73,17 +73,34 @@ function ApplyTheme({ content }: { content?: WeddingContent }) {
 
 function PublicNav() {
   return (
-    <header className="sticky top-0 z-20 border-b border-black/10 bg-[var(--surface)]/90 backdrop-blur">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link to="/" className="font-serif text-xl font-semibold">Aislewright</Link>
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <a href="#programma" className="rounded-md px-3 py-2 hover:bg-black/5">Programma</a>
-          <a href="#praktisch" className="rounded-md px-3 py-2 hover:bg-black/5">Praktisch</a>
-          <Link to="/guest" className="rounded-md px-3 py-2 hover:bg-black/5">Mijn RSVP</Link>
-          <Link to="/admin" className="rounded-md px-3 py-2 hover:bg-black/5">Admin</Link>
+    <header className="sticky top-0 z-20 border-b border-[var(--sand)]/70 bg-[var(--cream)]/95 backdrop-blur">
+      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <Link to="/" className="font-serif text-xl tracking-wide text-[var(--brown)] transition hover:opacity-80">
+          P <span className="text-[var(--gold)]">&</span> K
+        </Link>
+        <div className="flex items-center gap-1 text-sm font-medium text-[var(--brown)] sm:gap-3">
+          <Link to="/" className="hidden rounded-full px-3 py-2 transition hover:text-[var(--gold)] sm:inline-flex">Home</Link>
+          <a href="/#programma" className="rounded-full px-3 py-2 transition hover:text-[var(--gold)]">Programma</a>
+          <a href="/#praktisch" className="rounded-full px-3 py-2 transition hover:text-[var(--gold)]">Praktisch</a>
+          <Link to="/guest" className="rounded-full px-3 py-2 transition hover:text-[var(--gold)]">Mijn RSVP</Link>
+          <Link to="/admin" className="hidden rounded-full px-3 py-2 transition hover:text-[var(--gold)] sm:inline-flex">Admin</Link>
         </div>
       </nav>
     </header>
+  );
+}
+
+function PublicFooter({ content }: { content: WeddingContent }) {
+  return (
+    <footer className="mt-auto bg-[var(--brown-dark)] px-4 py-12 text-center text-[var(--cream)]">
+      <div className="mx-auto max-w-6xl">
+        <h2 className="font-serif text-2xl">{content.settings.coupleNames}</h2>
+        <p className="mt-4 text-[var(--cream)]/80">
+          {content.settings.weddingDate} &middot; {content.settings.locationName}
+        </p>
+        <p className="mt-2 text-sm text-[var(--cream)]/60">Met liefde gemaakt voor onze gasten &middot; 2026</p>
+      </div>
+    </footer>
   );
 }
 
@@ -91,47 +108,99 @@ function HomePage() {
   const contentQuery = useContent();
   const content = contentQuery.data;
   return (
-    <div>
+    <div className="min-h-screen bg-[var(--cream)]">
       <ApplyTheme content={content} />
       <PublicNav />
       {contentQuery.isLoading && <main className="mx-auto max-w-6xl px-4 py-12">Laden...</main>}
       {content && (
         <main>
-          <section className="hero-photo min-h-[68vh] px-4 py-20 text-white">
-            <div className="mx-auto flex min-h-[52vh] max-w-6xl flex-col justify-end">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.16em]">{content.settings.weddingDate}</p>
-              <h1 className="max-w-3xl font-serif text-5xl font-semibold leading-tight md:text-7xl">{content.settings.coupleNames}</h1>
-              <p className="mt-5 max-w-2xl text-xl text-white/90">{content.settings.tagline}</p>
-              <div className="mt-8 flex flex-wrap gap-3">
+          <section className="hero-photo relative px-4 py-28 text-[var(--cream)] md:py-32">
+            <div className="mx-auto flex min-h-[48vh] max-w-2xl flex-col items-center justify-center text-center">
+              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--cream)]/90">Wij gaan trouwen</p>
+              <h1 className="font-serif text-5xl font-normal leading-tight drop-shadow-lg md:text-6xl">{content.settings.coupleNames}</h1>
+              <p className="mt-4 font-serif text-2xl drop-shadow-lg">{content.settings.weddingDate}</p>
+              <p className="mt-5 max-w-xl text-lg text-[var(--cream)]/90">{content.settings.tagline}</p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Link to="/guest"><Button><Heart size={18} /> RSVP invullen</Button></Link>
-                <a href="#programma"><Button variant="ghost"><CalendarDays size={18} /> Bekijk programma</Button></a>
+                <a href="#programma"><Button variant="secondary"><CalendarDays size={18} /> Bekijk programma</Button></a>
               </div>
             </div>
           </section>
 
-          <section className="mx-auto grid max-w-6xl gap-5 px-4 py-10 md:grid-cols-[1.2fr_0.8fr]">
+          <section className="bg-[var(--sand)] px-4 py-16">
+            <div className="mx-auto max-w-4xl text-center">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Welkom</p>
+              <h2 className="font-serif text-3xl font-normal text-[var(--brown-dark)]">Leuk dat je er bent</h2>
+            </div>
+          </section>
+
+          <section className="bg-[var(--cream)] px-4 py-16">
+            <div className="mx-auto max-w-5xl">
+              <div className="mb-8 text-center">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Ontdek meer</p>
+                <h2 className="font-serif text-3xl font-normal text-[var(--brown-dark)]">Alles voor het verblijf</h2>
+              </div>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <a href="#programma" className="group block">
+                  <Card className="h-full p-6 transition group-hover:border-[var(--gold)] group-hover:shadow-md">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]"><CalendarDays size={24} /></div>
+                    <h3 className="font-serif text-xl text-[var(--brown-dark)]">Het Programma</h3>
+                    <p className="mt-2 text-sm text-[var(--brown-light)]">Bekijk het programma van het weekend.</p>
+                    <span className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">Bekijk programma</span>
+                  </Card>
+                </a>
+                <a href="#locatie" className="group block">
+                  <Card className="h-full p-6 transition group-hover:border-[var(--gold)] group-hover:shadow-md">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]"><MapPin size={24} /></div>
+                    <h3 className="font-serif text-xl text-[var(--brown-dark)]">Locatie & Reis</h3>
+                    <p className="mt-2 text-sm text-[var(--brown-light)]">{content.settings.locationSummary}</p>
+                    <span className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">Bekijk locatie</span>
+                  </Card>
+                </a>
+                <Link to="/guest" className="group block">
+                  <Card className="h-full p-6 transition group-hover:border-[var(--gold)] group-hover:shadow-md">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]"><Car size={24} /></div>
+                    <h3 className="font-serif text-xl text-[var(--brown-dark)]">Carpoolen</h3>
+                    <p className="mt-2 text-sm text-[var(--brown-light)]">Zoek medereizigers of bied een plek aan in jouw auto.</p>
+                    <span className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">Bekijk ritten</span>
+                  </Card>
+                </Link>
+                <a href="#praktisch" className="group block">
+                  <Card className="h-full p-6 transition group-hover:border-[var(--gold)] group-hover:shadow-md">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]"><Info size={24} /></div>
+                    <h3 className="font-serif text-xl text-[var(--brown-dark)]">Praktische Info</h3>
+                    <p className="mt-2 text-sm text-[var(--brown-light)]">Alles over dresscode, overnachten en meer.</p>
+                    <span className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">Bekijk info</span>
+                  </Card>
+                </a>
+              </div>
+            </div>
+          </section>
+
+          <section id="locatie" className="mx-auto grid max-w-6xl gap-5 px-4 py-10 md:grid-cols-[1.2fr_0.8fr]">
             {content.sections.map((section) => (
               <Card key={section.id}>
-                <p className="mb-2 text-sm font-semibold text-[var(--accent-strong)]">{section.slug}</p>
-                <h2 className="font-serif text-3xl font-semibold">{section.title}</h2>
-                <p className="mt-3 whitespace-pre-line text-[var(--muted)]">{section.body}</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">{section.slug}</p>
+                <h2 className="font-serif text-3xl font-normal text-[var(--brown-dark)]">{section.title}</h2>
+                <p className="mt-3 whitespace-pre-line text-[var(--brown-light)]">{section.body}</p>
               </Card>
             ))}
           </section>
 
-          <section id="programma" className="border-y border-black/10 bg-white/35 px-4 py-10">
+          <section id="programma" className="border-y border-[var(--sand)] bg-white/35 px-4 py-12">
             <div className="mx-auto max-w-6xl">
-              <h2 className="font-serif text-4xl font-semibold">Programma</h2>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Het Programma</p>
+              <h2 className="font-serif text-4xl font-normal text-[var(--brown-dark)]">Programma</h2>
               <div className="mt-6 grid gap-5 md:grid-cols-2">
                 {content.schedule.map((day) => (
                   <Card key={day.id}>
-                    <p className="text-sm font-semibold text-[var(--accent-strong)]">{day.date}</p>
-                    <h3 className="font-serif text-2xl font-semibold">{day.label}</h3>
+                    <p className="text-sm font-semibold text-[var(--gold)]">{day.date}</p>
+                    <h3 className="font-serif text-2xl font-normal text-[var(--brown-dark)]">{day.label}</h3>
                     <div className="mt-4 grid gap-3">
                       {day.events.map((event) => (
-                        <div key={event.id} className="grid grid-cols-[4.5rem_1fr] gap-3 border-t border-black/10 pt-3">
-                          <span className="font-semibold">{event.time}</span>
-                          <span><strong>{event.title}</strong><br /><span className="text-sm text-[var(--muted)]">{event.description}</span></span>
+                        <div key={event.id} className="grid grid-cols-[4.5rem_1fr] gap-3 border-t border-[var(--sand)] pt-3">
+                          <span className="font-semibold text-[var(--brown)]">{event.time}</span>
+                          <span><strong className="text-[var(--brown-dark)]">{event.title}</strong><br /><span className="text-sm text-[var(--brown-light)]">{event.description}</span></span>
                         </div>
                       ))}
                     </div>
@@ -141,17 +210,19 @@ function HomePage() {
             </div>
           </section>
 
-          <section id="praktisch" className="mx-auto max-w-6xl px-4 py-10">
-            <h2 className="font-serif text-4xl font-semibold">Praktisch</h2>
+          <section id="praktisch" className="mx-auto max-w-6xl px-4 py-12">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Praktische Informatie</p>
+            <h2 className="font-serif text-4xl font-normal text-[var(--brown-dark)]">Alles wat je moet weten</h2>
             <div className="mt-6 grid gap-4 md:grid-cols-3">
               {content.faqs.map((faq) => (
                 <Card key={faq.id}>
-                  <h3 className="font-semibold">{faq.question}</h3>
-                  <p className="mt-2 text-sm text-[var(--muted)]">{faq.answer}</p>
+                  <h3 className="font-semibold text-[var(--brown-dark)]">{faq.question}</h3>
+                  <p className="mt-2 text-sm text-[var(--brown-light)]">{faq.answer}</p>
                 </Card>
               ))}
             </div>
           </section>
+          <PublicFooter content={content} />
         </main>
       )}
     </div>

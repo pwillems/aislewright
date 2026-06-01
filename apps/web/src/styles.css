@@ -3,13 +3,53 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8f4ed;
-  --surface: #fffaf2;
-  --ink: #27231f;
-  --muted: #756f66;
-  --accent: #7a8f69;
-  --accent-strong: #843f5b;
+  --cream: #faf8f5;
+  --cream-dark: #f5f0e8;
+  --sand: #ede8dd;
+  --gold: #c4a35a;
+  --gold-dark: #a68b4b;
+  --brown: #5c4a35;
+  --brown-light: #8b7355;
+  --brown-dark: #3d3228;
+  --background: var(--cream);
+  --surface: #ffffff;
+  --ink: var(--brown);
+  --muted: var(--brown-light);
+  --accent: var(--sand);
+  --accent-strong: var(--gold);
   --sky: #7f9fb3;
+}
+
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/playfairdisplay/v37/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtM.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/playfairdisplay/v37/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKeiunDXbtM.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYMZ1rib2Bg-4.woff2") format("woff2");
 }
 
 * {
@@ -21,6 +61,7 @@ body {
   min-width: 320px;
   color: var(--ink);
   background: var(--background);
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 a {
@@ -32,7 +73,7 @@ button, input, textarea, select {
 }
 
 .hero-photo {
-  background-image: linear-gradient(90deg, rgba(39, 35, 31, 0.68), rgba(39, 35, 31, 0.2)), var(--hero-image);
+  background-image: linear-gradient(180deg, rgba(61, 50, 40, 0.7), rgba(61, 50, 40, 0.82)), var(--hero-image);
   background-size: cover;
   background-position: center;
 }
@@ -40,4 +81,8 @@ button, input, textarea, select {
 .focus-ring:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--accent-strong), white 30%);
   outline-offset: 2px;
+}
+
+.font-serif {
+  font-family: "Playfair Display", Georgia, serif;
 }

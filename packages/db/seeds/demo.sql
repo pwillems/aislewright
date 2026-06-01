@@ -16,8 +16,8 @@ INSERT INTO wedding_settings (
   'nl',
   'Hoeve de Demo',
   'Een warme plek tussen dorp, wijngaard en binnenplaats.',
-  'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1800&q=80',
-  '{"background":"#f8f4ed","surface":"#fffaf2","ink":"#27231f","muted":"#756f66","accent":"#7a8f69","accentStrong":"#843f5b"}'::jsonb
+  '/images/venue/chateau-1.jpg',
+  '{"background":"#FAF8F5","surface":"#FFFFFF","ink":"#5C4A35","muted":"#8B7355","accent":"#EDE8DD","accentStrong":"#C4A35A"}'::jsonb
 ) ON CONFLICT (id) DO UPDATE SET
   couple_names = excluded.couple_names,
   tagline = excluded.tagline,
