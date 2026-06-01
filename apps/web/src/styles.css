@@ -78,6 +78,11 @@ button, input, textarea, select {
   background-position: center;
 }
 
+.site-nav {
+  background: var(--cream);
+  box-shadow: 0 1px 0 rgba(92, 74, 53, 0.08);
+}
+
 .focus-ring:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--accent-strong), white 30%);
   outline-offset: 2px;

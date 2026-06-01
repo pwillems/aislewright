@@ -1,7 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, Navigate, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Car, Download, Heart, Info, Lock, MapPin, Plus, Save, Users, Wine } from "lucide-react";
+import { Bed, CalendarDays, Car, Download, Euro, Gift, Heart, Info, Lock, MapPin, Plus, Save, Shirt, Thermometer, Users, Wine } from "lucide-react";
 import type { ActivityResponse, Guest, Household, MenuSelection, RideOffer, WeddingContent } from "@aislewright/shared";
 import { api, exportUrl, type GuestState } from "./api";
 
@@ -79,7 +79,7 @@ function PublicNav() {
     "rounded-full px-3 py-2 transition " + (isActive ? "text-[var(--gold)]" : "hover:text-[var(--gold)]");
 
   return (
-    <header className="sticky top-0 z-20 border-b border-[var(--sand)]/70 bg-[var(--cream)]/95 backdrop-blur">
+    <header className="site-nav sticky top-0 z-50 border-b border-[var(--sand)]/70">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link to="/" className="font-serif text-xl tracking-wide text-[var(--brown)] transition hover:opacity-80">
           P <span className="text-[var(--gold)]">&</span> K
@@ -218,25 +218,32 @@ function HomePage() {
             </div>
           </section>
 
-          <section className="bg-[var(--cream)] px-4 py-16">
-            <div className="mx-auto max-w-5xl">
+          <section className="bg-[var(--sand)] px-4 py-16">
+            <div className="mx-auto max-w-2xl">
               <div className="mb-8 text-center">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Laatste nieuws</p>
                 <h2 className="font-serif text-3xl font-normal text-[var(--brown-dark)]">Updates voor het weekend</h2>
               </div>
-              <div className="grid gap-5 md:grid-cols-3">
+              <div className="grid gap-3">
                 {latestNews.map((section) => (
-                  <Card key={section.id}>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">{section.slug}</p>
-                    <h3 className="font-serif text-2xl font-normal text-[var(--brown-dark)]">{section.title}</h3>
-                    <p className="mt-3 text-sm text-[var(--brown-light)]">{section.body}</p>
+                  <Card key={section.id} className="p-4">
+                    <div className="flex gap-4">
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]">
+                        <Info size={18} />
+                      </div>
+                      <div>
+                        <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">{section.slug}</p>
+                        <h3 className="font-serif text-xl font-normal text-[var(--brown-dark)]">{section.title}</h3>
+                        <p className="mt-2 text-sm leading-relaxed text-[var(--brown-light)]">{section.body}</p>
+                      </div>
+                    </div>
                   </Card>
                 ))}
               </div>
             </div>
           </section>
 
-          <section className="bg-white/35 px-4 py-16">
+          <section className="bg-[var(--cream)] px-4 py-16">
             <div className="mx-auto max-w-5xl">
               <div className="mb-8 text-center">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Snel naar</p>
@@ -292,6 +299,28 @@ function ProgrammaPage() {
 function PraktischPage() {
   const contentQuery = useContent();
   const content = contentQuery.data;
+  const generalInfo = [
+    {
+      icon: Bed,
+      title: "Overnachten",
+      content: "Alle praktische details over verblijf, aankomst en spullen die handig zijn om mee te nemen verzamelen we hier."
+    },
+    {
+      icon: Thermometer,
+      title: "Weer",
+      content: "Neem iets warms mee voor later op de avond. Overdag kan het prettig zijn, maar buiten koelt het snel af."
+    },
+    {
+      icon: Euro,
+      title: "Kosten",
+      content: "Verblijf en maaltijden tijdens het weekend zijn geregeld. De reis naar de locatie regel je zelf."
+    },
+    {
+      icon: Gift,
+      title: "Cadeaus",
+      content: "Jullie aanwezigheid is het belangrijkste. Mocht je toch iets willen geven, dan houden we het graag eenvoudig."
+    }
+  ];
 
   if (contentQuery.isLoading) return <main className="mx-auto max-w-6xl px-4 py-12">Laden...</main>;
   if (!content) return null;
@@ -305,28 +334,87 @@ function PraktischPage() {
           body="Belangrijke informatie voor een ontspannen weekend."
           icon={<Info className="h-8 w-8" />}
         />
-        <section className="bg-[var(--sand)] px-4 py-12">
-          <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-3">
-            <Card>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--cream)] text-[var(--brown)]"><MapPin size={24} /></div>
-              <h2 className="font-serif text-2xl font-normal text-[var(--brown-dark)]">Locatie</h2>
-              <p className="mt-2 text-sm text-[var(--brown-light)]">{content.settings.locationName}</p>
-              <p className="mt-2 text-sm text-[var(--brown-light)]">{content.settings.locationSummary}</p>
-            </Card>
-            <Card>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--cream)] text-[var(--brown)]"><Car size={24} /></div>
-              <h2 className="font-serif text-2xl font-normal text-[var(--brown-dark)]">Vervoer</h2>
-              <p className="mt-2 text-sm text-[var(--brown-light)]">Kom je met de auto of zoek je een plek? Regel carpooling via je persoonlijke RSVP-pagina.</p>
-              <Link to="/rsvp" className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">Naar mijn RSVP</Link>
-            </Card>
-            <Card>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--cream)] text-[var(--brown)]"><Heart size={24} /></div>
-              <h2 className="font-serif text-2xl font-normal text-[var(--brown-dark)]">RSVP</h2>
-              <p className="mt-2 text-sm text-[var(--brown-light)]">Geef per persoon aanwezigheid, dieetwensen, menu-keuzes en activiteiten door.</p>
-              <Link to="/rsvp" className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">RSVP invullen</Link>
+        <section className="px-4 py-12">
+          <div className="mx-auto max-w-4xl">
+            <div className="mb-8 text-center">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Algemene informatie</p>
+              <h2 className="font-serif text-3xl font-normal text-[var(--brown-dark)]">Goed om te weten</h2>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              {generalInfo.map((section) => {
+                const Icon = section.icon;
+                return (
+                  <Card key={section.title} className="p-6">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]">
+                      <Icon size={24} />
+                    </div>
+                    <h3 className="font-serif text-xl text-[var(--brown-dark)]">{section.title}</h3>
+                    <p className="mt-2 text-sm text-[var(--brown-light)]">{section.content}</p>
+                  </Card>
+                );
+              })}
+            </div>
+            <Card className="mt-6 p-6">
+              <div className="flex flex-col gap-4 md:flex-row md:items-start">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]"><MapPin size={24} /></div>
+                <div>
+                  <h3 className="font-serif text-xl text-[var(--brown-dark)]">{content.settings.locationName}</h3>
+                  <p className="mt-2 text-sm text-[var(--brown-light)]">{content.settings.locationSummary}</p>
+                  <Link to="/rsvp" className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">Carpooling regelen via mijn RSVP</Link>
+                </div>
+              </div>
             </Card>
           </div>
         </section>
+
+        <section className="bg-[var(--sand)] px-4 py-12">
+          <div className="mx-auto max-w-4xl">
+            <div className="mb-8 text-center">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Dresscode</p>
+              <h2 className="font-serif text-3xl font-normal text-[var(--brown-dark)]">Colorful chique</h2>
+              <p className="mt-2 text-[var(--brown-light)]">Voor de trouwdag zelf.</p>
+            </div>
+
+            <Card className="p-6 md:p-8">
+              <div className="grid grid-cols-2 items-stretch gap-4 md:grid-cols-[1fr_1fr_1.5fr] md:gap-8">
+                <div className="min-h-48 overflow-hidden rounded-lg">
+                  <img src="/images/dresscode/dresscode1.jpeg" alt="Colorful chique inspiratie" className="h-full w-full object-cover" />
+                </div>
+                <div className="min-h-48 overflow-hidden rounded-lg">
+                  <img src="/images/dresscode/dresscode2.jpeg" alt="Colorful chique inspiratie" className="h-full w-full object-cover" />
+                </div>
+                <div className="col-span-2 md:col-span-1">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]">
+                    <Shirt size={24} />
+                  </div>
+                  <h3 className="font-serif text-xl text-[var(--brown-dark)]">Colorful chique dresscode</h3>
+                  <p className="mt-3 text-sm text-[var(--brown-light)]">
+                    We vinden het leuk als jullie je mooi voelen op de dag en, als het kan, iets kleurigs dragen. Denk aan mooie jurken, jumpsuits of pakken, maar wel comfortabel genoeg om te kunnen dansen.
+                  </p>
+                  <div className="mt-5 grid gap-4">
+                    <div className="rounded-lg bg-[var(--cream)] p-4">
+                      <h4 className="text-sm font-semibold text-[var(--brown-dark)]">Denk aan</h4>
+                      <ul className="mt-2 grid gap-1 text-sm text-[var(--brown-light)]">
+                        <li>Vrolijke, opvallende kleuren</li>
+                        <li>Mooie jurken, jumpsuits of pakken</li>
+                        <li>Een kleurrijke accessoire werkt ook</li>
+                      </ul>
+                    </div>
+                    <div className="rounded-lg bg-[var(--cream)] p-4">
+                      <h4 className="text-sm font-semibold text-[var(--brown-dark)]">Houd rekening met</h4>
+                      <ul className="mt-2 grid gap-1 text-sm text-[var(--brown-light)]">
+                        <li>Geen wit of creme</li>
+                        <li>De ceremonie is buiten, dus kies handige schoenen</li>
+                        <li>Neem een vestje of jasje mee voor de avond</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </section>
+
         <section className="px-4 py-12">
           <div className="mx-auto max-w-6xl">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">FAQ</p>
