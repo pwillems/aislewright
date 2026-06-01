@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { Link, NavLink, Route, Routes, useNavigate, useParams } from "react-router-dom";
+import { Link, NavLink, Navigate, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays, Car, Download, Heart, Info, Lock, MapPin, Plus, Save, Users, Wine } from "lucide-react";
 import type { ActivityResponse, Guest, Household, MenuSelection, RideOffer, WeddingContent } from "@aislewright/shared";
@@ -9,8 +9,11 @@ export function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/programma" element={<ProgrammaPage />} />
+      <Route path="/praktisch" element={<PraktischPage />} />
+      <Route path="/rsvp" element={<GuestPage />} />
       <Route path="/invite/:token" element={<InvitePage />} />
-      <Route path="/guest" element={<GuestPage />} />
+      <Route path="/guest" element={<Navigate to="/rsvp" replace />} />
       <Route path="/admin" element={<AdminPage />} />
     </Routes>
   );
@@ -72,6 +75,9 @@ function ApplyTheme({ content }: { content?: WeddingContent }) {
 }
 
 function PublicNav() {
+  const navClass = ({ isActive }: { isActive: boolean }) =>
+    "rounded-full px-3 py-2 transition " + (isActive ? "text-[var(--gold)]" : "hover:text-[var(--gold)]");
+
   return (
     <header className="sticky top-0 z-20 border-b border-[var(--sand)]/70 bg-[var(--cream)]/95 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
@@ -79,11 +85,11 @@ function PublicNav() {
           P <span className="text-[var(--gold)]">&</span> K
         </Link>
         <div className="flex items-center gap-1 text-sm font-medium text-[var(--brown)] sm:gap-3">
-          <Link to="/" className="hidden rounded-full px-3 py-2 transition hover:text-[var(--gold)] sm:inline-flex">Home</Link>
-          <a href="/#programma" className="rounded-full px-3 py-2 transition hover:text-[var(--gold)]">Programma</a>
-          <a href="/#praktisch" className="rounded-full px-3 py-2 transition hover:text-[var(--gold)]">Praktisch</a>
-          <Link to="/guest" className="rounded-full px-3 py-2 transition hover:text-[var(--gold)]">Mijn RSVP</Link>
-          <Link to="/admin" className="hidden rounded-full px-3 py-2 transition hover:text-[var(--gold)] sm:inline-flex">Admin</Link>
+          <NavLink to="/" className={({ isActive }) => navClass({ isActive }) + " hidden sm:inline-flex"}>Home</NavLink>
+          <NavLink to="/programma" className={navClass}>Programma</NavLink>
+          <NavLink to="/praktisch" className={navClass}>Praktisch</NavLink>
+          <NavLink to="/rsvp" className={navClass}>Mijn RSVP</NavLink>
+          <NavLink to="/admin" className={({ isActive }) => navClass({ isActive }) + " hidden sm:inline-flex"}>Admin</NavLink>
         </div>
       </nav>
     </header>
@@ -104,128 +110,234 @@ function PublicFooter({ content }: { content: WeddingContent }) {
   );
 }
 
+function PublicLayout({ content, children }: { content: WeddingContent; children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen flex-col bg-[var(--cream)]">
+      <ApplyTheme content={content} />
+      <PublicNav />
+      {children}
+      <PublicFooter content={content} />
+    </div>
+  );
+}
+
+function PageHero({ eyebrow, title, body, icon }: { eyebrow: string; title: string; body: string; icon: React.ReactNode }) {
+  return (
+    <section className="hero-photo px-4 py-20 text-center text-[var(--cream)]">
+      <div className="mx-auto max-w-2xl">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--cream)]/10 backdrop-blur-sm">
+          {icon}
+        </div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--cream)]/90">{eyebrow}</p>
+        <h1 className="font-serif text-4xl font-normal drop-shadow-lg">{title}</h1>
+        <p className="mt-4 text-[var(--cream)]/90 drop-shadow-lg">{body}</p>
+      </div>
+    </section>
+  );
+}
+
+function QuickLinkCard({ to, icon, title, description, linkText }: {
+  to: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  linkText: string;
+}) {
+  return (
+    <Link to={to} className="group block">
+      <Card className="h-full p-6 transition group-hover:border-[var(--gold)] group-hover:shadow-md">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]">{icon}</div>
+        <h3 className="font-serif text-xl text-[var(--brown-dark)]">{title}</h3>
+        <p className="mt-2 text-sm text-[var(--brown-light)]">{description}</p>
+        <span className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">{linkText}</span>
+      </Card>
+    </Link>
+  );
+}
+
+function ScheduleList({ content }: { content: WeddingContent }) {
+  return (
+    <div className="grid gap-5 md:grid-cols-2">
+      {content.schedule.map((day) => (
+        <Card key={day.id}>
+          <p className="text-sm font-semibold text-[var(--gold)]">{day.date}</p>
+          <h2 className="font-serif text-2xl font-normal text-[var(--brown-dark)]">{day.label}</h2>
+          <div className="mt-4 grid gap-3">
+            {day.events.map((event) => (
+              <div key={event.id} className="grid grid-cols-[4.5rem_1fr] gap-3 border-t border-[var(--sand)] pt-3">
+                <span className="font-semibold text-[var(--brown)]">{event.time}</span>
+                <span>
+                  <strong className="text-[var(--brown-dark)]">{event.title}</strong>
+                  <br />
+                  <span className="text-sm text-[var(--brown-light)]">{event.description}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function FaqGrid({ content }: { content: WeddingContent }) {
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      {content.faqs.map((faq) => (
+        <Card key={faq.id}>
+          <h3 className="font-semibold text-[var(--brown-dark)]">{faq.question}</h3>
+          <p className="mt-2 text-sm text-[var(--brown-light)]">{faq.answer}</p>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 function HomePage() {
   const contentQuery = useContent();
   const content = contentQuery.data;
+  const latestNews = content?.sections.slice(0, 3) ?? [];
+
   return (
-    <div className="min-h-screen bg-[var(--cream)]">
+    <div className="flex min-h-screen flex-col bg-[var(--cream)]">
       <ApplyTheme content={content} />
       <PublicNav />
       {contentQuery.isLoading && <main className="mx-auto max-w-6xl px-4 py-12">Laden...</main>}
       {content && (
         <main>
-          <section className="hero-photo relative px-4 py-28 text-[var(--cream)] md:py-32">
-            <div className="mx-auto flex min-h-[48vh] max-w-2xl flex-col items-center justify-center text-center">
+          <section className="hero-photo relative px-4 py-20 text-[var(--cream)] md:py-24">
+            <div className="mx-auto flex min-h-[34vh] max-w-2xl flex-col items-center justify-center text-center">
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--cream)]/90">Wij gaan trouwen</p>
               <h1 className="font-serif text-5xl font-normal leading-tight drop-shadow-lg md:text-6xl">{content.settings.coupleNames}</h1>
               <p className="mt-4 font-serif text-2xl drop-shadow-lg">{content.settings.weddingDate}</p>
               <p className="mt-5 max-w-xl text-lg text-[var(--cream)]/90">{content.settings.tagline}</p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <Link to="/guest"><Button><Heart size={18} /> RSVP invullen</Button></Link>
-                <a href="#programma"><Button variant="secondary"><CalendarDays size={18} /> Bekijk programma</Button></a>
+                <Link to="/rsvp"><Button><Heart size={18} /> RSVP invullen</Button></Link>
+                <Link to="/programma"><Button variant="secondary"><CalendarDays size={18} /> Bekijk programma</Button></Link>
               </div>
-            </div>
-          </section>
-
-          <section className="bg-[var(--sand)] px-4 py-16">
-            <div className="mx-auto max-w-4xl text-center">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Welkom</p>
-              <h2 className="font-serif text-3xl font-normal text-[var(--brown-dark)]">Leuk dat je er bent</h2>
             </div>
           </section>
 
           <section className="bg-[var(--cream)] px-4 py-16">
             <div className="mx-auto max-w-5xl">
               <div className="mb-8 text-center">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Ontdek meer</p>
-                <h2 className="font-serif text-3xl font-normal text-[var(--brown-dark)]">Alles voor het verblijf</h2>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Laatste nieuws</p>
+                <h2 className="font-serif text-3xl font-normal text-[var(--brown-dark)]">Updates voor het weekend</h2>
               </div>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <a href="#programma" className="group block">
-                  <Card className="h-full p-6 transition group-hover:border-[var(--gold)] group-hover:shadow-md">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]"><CalendarDays size={24} /></div>
-                    <h3 className="font-serif text-xl text-[var(--brown-dark)]">Het Programma</h3>
-                    <p className="mt-2 text-sm text-[var(--brown-light)]">Bekijk het programma van het weekend.</p>
-                    <span className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">Bekijk programma</span>
-                  </Card>
-                </a>
-                <a href="#locatie" className="group block">
-                  <Card className="h-full p-6 transition group-hover:border-[var(--gold)] group-hover:shadow-md">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]"><MapPin size={24} /></div>
-                    <h3 className="font-serif text-xl text-[var(--brown-dark)]">Locatie & Reis</h3>
-                    <p className="mt-2 text-sm text-[var(--brown-light)]">{content.settings.locationSummary}</p>
-                    <span className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">Bekijk locatie</span>
-                  </Card>
-                </a>
-                <Link to="/guest" className="group block">
-                  <Card className="h-full p-6 transition group-hover:border-[var(--gold)] group-hover:shadow-md">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]"><Car size={24} /></div>
-                    <h3 className="font-serif text-xl text-[var(--brown-dark)]">Carpoolen</h3>
-                    <p className="mt-2 text-sm text-[var(--brown-light)]">Zoek medereizigers of bied een plek aan in jouw auto.</p>
-                    <span className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">Bekijk ritten</span>
-                  </Card>
-                </Link>
-                <a href="#praktisch" className="group block">
-                  <Card className="h-full p-6 transition group-hover:border-[var(--gold)] group-hover:shadow-md">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sand)] text-[var(--brown)]"><Info size={24} /></div>
-                    <h3 className="font-serif text-xl text-[var(--brown-dark)]">Praktische Info</h3>
-                    <p className="mt-2 text-sm text-[var(--brown-light)]">Alles over dresscode, overnachten en meer.</p>
-                    <span className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">Bekijk info</span>
-                  </Card>
-                </a>
-              </div>
-            </div>
-          </section>
-
-          <section id="locatie" className="mx-auto grid max-w-6xl gap-5 px-4 py-10 md:grid-cols-[1.2fr_0.8fr]">
-            {content.sections.map((section) => (
-              <Card key={section.id}>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">{section.slug}</p>
-                <h2 className="font-serif text-3xl font-normal text-[var(--brown-dark)]">{section.title}</h2>
-                <p className="mt-3 whitespace-pre-line text-[var(--brown-light)]">{section.body}</p>
-              </Card>
-            ))}
-          </section>
-
-          <section id="programma" className="border-y border-[var(--sand)] bg-white/35 px-4 py-12">
-            <div className="mx-auto max-w-6xl">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Het Programma</p>
-              <h2 className="font-serif text-4xl font-normal text-[var(--brown-dark)]">Programma</h2>
-              <div className="mt-6 grid gap-5 md:grid-cols-2">
-                {content.schedule.map((day) => (
-                  <Card key={day.id}>
-                    <p className="text-sm font-semibold text-[var(--gold)]">{day.date}</p>
-                    <h3 className="font-serif text-2xl font-normal text-[var(--brown-dark)]">{day.label}</h3>
-                    <div className="mt-4 grid gap-3">
-                      {day.events.map((event) => (
-                        <div key={event.id} className="grid grid-cols-[4.5rem_1fr] gap-3 border-t border-[var(--sand)] pt-3">
-                          <span className="font-semibold text-[var(--brown)]">{event.time}</span>
-                          <span><strong className="text-[var(--brown-dark)]">{event.title}</strong><br /><span className="text-sm text-[var(--brown-light)]">{event.description}</span></span>
-                        </div>
-                      ))}
-                    </div>
+              <div className="grid gap-5 md:grid-cols-3">
+                {latestNews.map((section) => (
+                  <Card key={section.id}>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--gold)]">{section.slug}</p>
+                    <h3 className="font-serif text-2xl font-normal text-[var(--brown-dark)]">{section.title}</h3>
+                    <p className="mt-3 text-sm text-[var(--brown-light)]">{section.body}</p>
                   </Card>
                 ))}
               </div>
             </div>
           </section>
 
-          <section id="praktisch" className="mx-auto max-w-6xl px-4 py-12">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Praktische Informatie</p>
-            <h2 className="font-serif text-4xl font-normal text-[var(--brown-dark)]">Alles wat je moet weten</h2>
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
-              {content.faqs.map((faq) => (
-                <Card key={faq.id}>
-                  <h3 className="font-semibold text-[var(--brown-dark)]">{faq.question}</h3>
-                  <p className="mt-2 text-sm text-[var(--brown-light)]">{faq.answer}</p>
-                </Card>
-              ))}
+          <section className="bg-white/35 px-4 py-16">
+            <div className="mx-auto max-w-5xl">
+              <div className="mb-8 text-center">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Snel naar</p>
+                <h2 className="font-serif text-3xl font-normal text-[var(--brown-dark)]">Alles wat je nodig hebt</h2>
+              </div>
+              <div className="grid gap-6 md:grid-cols-3">
+                <QuickLinkCard to="/programma" icon={<CalendarDays size={24} />} title="Programma" description="Bekijk wat er wanneer gebeurt tijdens het weekend." linkText="Naar programma" />
+                <QuickLinkCard to="/praktisch" icon={<Info size={24} />} title="Praktisch" description="Lees de belangrijkste informatie over locatie, vervoer en voorbereiding." linkText="Naar praktisch" />
+                <QuickLinkCard to="/rsvp" icon={<Heart size={24} />} title="Mijn RSVP" description="Vul aanwezigheid, menu-keuzes, activiteiten en carpooling in." linkText="Naar mijn RSVP" />
+              </div>
             </div>
           </section>
           <PublicFooter content={content} />
         </main>
       )}
     </div>
+  );
+}
+
+function ProgrammaPage() {
+  const contentQuery = useContent();
+  const content = contentQuery.data;
+
+  if (contentQuery.isLoading) return <main className="mx-auto max-w-6xl px-4 py-12">Laden...</main>;
+  if (!content) return null;
+
+  return (
+    <PublicLayout content={content}>
+      <main>
+        <PageHero
+          eyebrow="Het Programma"
+          title="Vier samen het hele weekend"
+          body={"Van aankomst tot feest: alle momenten staan hier per dag bij elkaar."}
+          icon={<CalendarDays className="h-8 w-8" />}
+        />
+        <section className="px-4 py-12">
+          <div className="mx-auto max-w-4xl text-center">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">Planning</p>
+            <h2 className="font-serif text-4xl font-normal text-[var(--brown-dark)]">Programma</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-[var(--brown-light)]">
+              Tijden kunnen nog iets schuiven. Gebruik deze pagina als de centrale plek voor de laatste versie van het programma.
+            </p>
+          </div>
+          <div className="mx-auto mt-8 max-w-6xl">
+            <ScheduleList content={content} />
+          </div>
+        </section>
+      </main>
+    </PublicLayout>
+  );
+}
+
+function PraktischPage() {
+  const contentQuery = useContent();
+  const content = contentQuery.data;
+
+  if (contentQuery.isLoading) return <main className="mx-auto max-w-6xl px-4 py-12">Laden...</main>;
+  if (!content) return null;
+
+  return (
+    <PublicLayout content={content}>
+      <main>
+        <PageHero
+          eyebrow="Praktische Informatie"
+          title="Alles wat je moet weten"
+          body="Belangrijke informatie voor een ontspannen weekend."
+          icon={<Info className="h-8 w-8" />}
+        />
+        <section className="bg-[var(--sand)] px-4 py-12">
+          <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-3">
+            <Card>
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--cream)] text-[var(--brown)]"><MapPin size={24} /></div>
+              <h2 className="font-serif text-2xl font-normal text-[var(--brown-dark)]">Locatie</h2>
+              <p className="mt-2 text-sm text-[var(--brown-light)]">{content.settings.locationName}</p>
+              <p className="mt-2 text-sm text-[var(--brown-light)]">{content.settings.locationSummary}</p>
+            </Card>
+            <Card>
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--cream)] text-[var(--brown)]"><Car size={24} /></div>
+              <h2 className="font-serif text-2xl font-normal text-[var(--brown-dark)]">Vervoer</h2>
+              <p className="mt-2 text-sm text-[var(--brown-light)]">Kom je met de auto of zoek je een plek? Regel carpooling via je persoonlijke RSVP-pagina.</p>
+              <Link to="/rsvp" className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">Naar mijn RSVP</Link>
+            </Card>
+            <Card>
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--cream)] text-[var(--brown)]"><Heart size={24} /></div>
+              <h2 className="font-serif text-2xl font-normal text-[var(--brown-dark)]">RSVP</h2>
+              <p className="mt-2 text-sm text-[var(--brown-light)]">Geef per persoon aanwezigheid, dieetwensen, menu-keuzes en activiteiten door.</p>
+              <Link to="/rsvp" className="mt-4 inline-flex text-sm font-semibold text-[var(--gold)]">RSVP invullen</Link>
+            </Card>
+          </div>
+        </section>
+        <section className="px-4 py-12">
+          <div className="mx-auto max-w-6xl">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brown-light)]">FAQ</p>
+            <h2 className="font-serif text-4xl font-normal text-[var(--brown-dark)]">Veelgestelde vragen</h2>
+            <div className="mt-6">
+              <FaqGrid content={content} />
+            </div>
+          </div>
+        </section>
+      </main>
+    </PublicLayout>
   );
 }
 
@@ -237,7 +349,7 @@ function InvitePage() {
     mutationFn: () => api.invite(token ?? ""),
     onSuccess: (data) => {
       queryClient.setQueryData(["me"], data);
-      navigate("/guest");
+      navigate("/rsvp");
     }
   });
   useEffect(() => {
